@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Display a map</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+<style>
+	body { margin: 0; padding: 0; }
+	#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    var map = new maplibregl.Map({
+        container: 'map', // container id
+        style: 'https://demotiles.maplibre.org/style.json', // style URL
+        center: [0, 0], // starting position [lng, lat]
+        zoom: 1 // starting zoom
+    });
+
+
+
+    map.once("load", () => {
+        // This code runs once the base style has finished loading.
+        console.log("adding source...");
+
+        map.addSource("earthquake-month", {
+          type: "geojson",
+          data: "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson",
+
+        });
+        console.log("added source...");
+        map.addLayer({
+          id: "earthquake-map",
+          type: "circle",
+          source: "earthquake-month",
+          paint: {
+            "circle-color": "hsla(0,0%,0%,0.75)",
+            "circle-stroke-width": 1,
+            "circle-stroke-color": "red",
+        },
+
+          
+        });
+        console.log("layer added...");
+        map.on("click", "earthquake-map", (e) => {
+          const trailhead = e.features[0];
+          console.log(trailhead);
+          new maplibregl.Popup({ closeOnClick: false })
+          .setLngLat(trailhead.geometry.coordinates)
+
+            .setHTML(`<b>${trailhead.properties.mag}</b>${trailhead.properties.place}`)
+            .addTo(map);
+        });
+
+        map.on("mouseenter", "earthquake-map", () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+
+    });
+
+</script>
+
+</body>
+</html>
